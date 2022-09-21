@@ -1,0 +1,19 @@
+ID: 1     
+Naam: G van Rijn
+Geboortedatum: 17-09-2002
+
+ID: 2     
+Naam: B van Rijn
+Geboortedatum: 22-10-2002
+
+ID: 3     
+Naam: H Lubben
+Geboortedatum: 11-08-1998
+
+ID: 4     
+Naam: F Memari
+Geboortedatum: 03-12-2002
+
+ID: 5     
+Naam: G Piccardo
+Geboortedatum: 03-12-2002
