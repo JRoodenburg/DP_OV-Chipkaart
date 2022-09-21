@@ -1,5 +1,6 @@
 package repositories;
 
+import domain.OVChipkaart;
 import domain.Reiziger;
 
 import java.sql.*;
@@ -23,24 +24,29 @@ public class ReizigerDAOPsql implements ReizigerDao {
             preparedStatement.setInt(1, id);
             preparedStatement.execute();
             ResultSet resultSet = preparedStatement.getResultSet();
-
+            Reiziger reiziger = null;
             if (resultSet.next()){
                 int reiziger_id = resultSet.getInt(1);
                 String voorletter = resultSet.getString(2);
                 String tussenvoegsel = resultSet.getString(3);
                 String achternaam = resultSet.getString(4);
                 Date geboortedatum = resultSet.getDate(5);
-                return new Reiziger(reiziger_id,voorletter, tussenvoegsel, achternaam, geboortedatum);
+                reiziger = new Reiziger(reiziger_id,voorletter, tussenvoegsel, achternaam, geboortedatum);
+
+                OVChipkaartDaoPsql ovdao = new OVChipkaartDaoPsql(this.conn);
+                for (OVChipkaart ov_chipkaart: ovdao.findByReiziger(reiziger)) {
+                    reiziger.AddOvchipkaart(ov_chipkaart);
+                }
 
             }
 
+
             preparedStatement.close();
             resultSet.close();
-            return null;
+            return reiziger;
 
         } catch (SQLException e) {
-            System.out.println("Well hello?");
-//            System.err.println(e);
+            System.err.println(e);
             return null;
         }
     }
@@ -67,6 +73,10 @@ public class ReizigerDAOPsql implements ReizigerDao {
 //                String achternaam = "a";
 //                Date geboortedatum = Date.valueOf(LocalDate.now());
                 Reiziger reiziger = new Reiziger(reiziger_id,voorletter, tussenvoegsel, achternaam, geboortedatum);
+                OVChipkaartDaoPsql ovdao = new OVChipkaartDaoPsql(this.conn);
+                for (OVChipkaart ov_chipkaart: ovdao.findByReiziger(reiziger)) {
+                    reiziger.AddOvchipkaart(ov_chipkaart);
+                }
                 reizigers.add(reiziger);
             }
 
@@ -97,7 +107,10 @@ public class ReizigerDAOPsql implements ReizigerDao {
                 String achternaam = resultSet.getString(4);
                 Date geboortedatum = resultSet.getDate(5);
                 Reiziger reiziger = new Reiziger(reiziger_id,voorletter, tussenvoegsel, achternaam, geboortedatum);
-                reiziger.setReiziger_id(reiziger_id);
+                OVChipkaartDaoPsql ovdao = new OVChipkaartDaoPsql(this.conn);
+                for (OVChipkaart ov_chipkaart: ovdao.findByReiziger(reiziger)) {
+                    reiziger.AddOvchipkaart(ov_chipkaart);
+                }
                 reizigers.add(reiziger);
             }
 

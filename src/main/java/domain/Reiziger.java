@@ -1,6 +1,8 @@
 package domain;
 
 import java.sql.Date;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Reiziger {
     private int reiziger_id;
@@ -9,13 +11,24 @@ public class Reiziger {
     private String achternaam;
     private Date geboorteDatum;
 
+    private ArrayList<OVChipkaart> chipkaarten = new ArrayList<>();
+
     public Reiziger(int reiziger_id, String voorletters, String tussenvoegsel, String achternaam, Date geboorteDatum) {
-        //GEEN ID BIJ REIZIGER CONSTRUCTOR. deze word auto increment vanuit db.
         this.reiziger_id = reiziger_id;
         this.voorletters = voorletters;
         this.tussenvoegsel = tussenvoegsel;
         this.achternaam = achternaam;
         this.geboorteDatum = geboorteDatum;
+    }
+
+    public boolean AddOvchipkaart(OVChipkaart ovChipkaart){
+        try {
+            this.chipkaarten.add(ovChipkaart);
+            return true;
+        } catch (Exception e) {
+            System.err.println(e);
+           return false;
+        }
     }
 
     public String getNaam(){
@@ -70,6 +83,10 @@ public class Reiziger {
 
     @Override
     public String toString() {
-        return String.format("(%d) %s %s", reiziger_id, getNaam(), getGeboorteDatum().toString());
+        return String.format("(%d) %s %s", reiziger_id, getNaam(), geboorteDatum.toString());
+    }
+
+    public List<OVChipkaart> getOVChipkaarten() {
+        return chipkaarten;
     }
 }
