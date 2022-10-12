@@ -1,5 +1,6 @@
 import domain.Adres;
 import domain.OVChipkaart;
+import domain.Product;
 import domain.Reiziger;
 import repositories.*;
 
@@ -15,9 +16,10 @@ public class Main {
         try {
             getConnection();
             ReizigerDAOPsql rdao = new ReizigerDAOPsql(conn);
-            AdresDao adao = new AdresDAOPsql(conn);
-            OVChipkaartDao odao = new OVChipkaartDaoPsql(conn);
-            testReizigerDAO(rdao, adao, odao);
+            AdresDAOPsql adao = new AdresDAOPsql(conn);
+            OVChipkaartDaoPsql odao = new OVChipkaartDaoPsql(conn);
+            ProductDaoPsql pdao = new ProductDaoPsql(conn);
+            testReizigerDAO(rdao, adao, odao, pdao);
 
             closeConnection();
         } catch (SQLException e) {
@@ -48,7 +50,7 @@ public class Main {
      *
      * @throws SQLException
      */
-    private static void testReizigerDAO(ReizigerDAOPsql rdao, AdresDao adao, OVChipkaartDao odao) throws SQLException {
+    private static void testReizigerDAO(ReizigerDAOPsql rdao, AdresDAOPsql adao, OVChipkaartDaoPsql odao, ProductDaoPsql pdao) throws SQLException {
         final String ANSI_RESET = "\u001B[0m";
         final String ANSI_GREEN = "\u001B[32m";
         final String ANSI_BLUE = "\u001B[34m";
@@ -113,16 +115,26 @@ public class Main {
             System.out.print("Delete ov1 : ");
             System.out.println( odao.delete(ov1d) ? "success" : "error");
         }
+
         OVChipkaart ov2d = odao.findByKaartnummer(2);
-        if (ov2d != null){ // see if reiziger exists
+        if (odao.getProducts(ov2d) != null){ // verwijder producten van ov2
+            for (Product p: odao.getProducts(ov2d)){
+                System.out.print("Delete ov2 products : " + p);
+                System.out.println( odao.removeProduct(p,ov2d) ? "success" : "error");
+            }
+
+            // see if reiziger exists
             System.out.print("Delete ov2 : ");
             System.out.println( odao.delete(ov2d) ? "success" : "error");
+
         }
+
         OVChipkaart ov3d = odao.findByKaartnummer(3);
         if (ov3d != null){ // see if reiziger exists
             System.out.print("Delete ov3 : ");
             System.out.println( odao.delete(ov3d) ? "success" : "error");
         }
+
 
         System.out.println(ANSI_BLUE + "Done!" + ANSI_RESET);
 
@@ -199,9 +211,12 @@ public class Main {
         Reiziger r78 = new Reiziger(78,"H","van","Dijk",Date.valueOf(LocalDate.now().minusYears(50)));
         Reiziger r79 = new Reiziger(79,"D","de","pleijn",Date.valueOf(LocalDate.now().minusYears(20)));
 
-        OVChipkaart ov1 = new OVChipkaart(1,Date.valueOf(LocalDate.now().plusYears(1)),1,78);
-        OVChipkaart ov2 = new OVChipkaart(2,Date.valueOf(LocalDate.now().plusYears(1)),1,78);
-        OVChipkaart ov3 = new OVChipkaart(3,Date.valueOf(LocalDate.now().plusYears(1)),2,79);
+        OVChipkaart ov1 = new OVChipkaart(1,Date.valueOf(LocalDate.now().plusYears(1)),1);
+        ov1.setReiziger_id(78);
+        OVChipkaart ov2 = new OVChipkaart(2,Date.valueOf(LocalDate.now().plusYears(1)),1);
+        ov2.setReiziger_id(78);
+        OVChipkaart ov3 = new OVChipkaart(3,Date.valueOf(LocalDate.now().plusYears(1)),2);
+        ov3.setReiziger_id(78);
         r78.AddOvchipkaart(ov1);
         r79.AddOvchipkaart(ov3);
 
@@ -240,6 +255,38 @@ public class Main {
         System.out.println(odao.findByReiziger(r78));
 
         System.out.println(ANSI_PURPLE + "TESTS ARE DONE!" + ANSI_RESET);
+
+        System.out.println(ANSI_PURPLE + "---------- Test P5 CHIPKAART / PRODUCT -------------" + ANSI_RESET);
+
+        System.out.println(ANSI_GREEN + "[TEST] add product to ov" + ANSI_RESET);
+        odao.save(ov2);
+        System.out.println(ANSI_BLUE + odao.findByKaartnummer(2) + ANSI_RESET);
+        Product p1 = new Product(1,"Studenten Ov", "gratis reizen door de week met studenten ov",1337);
+        ov2.addProduct(p1);
+        odao.update(ov2);
+
+        System.out.println(odao.findByKaartnummer(2));
+        System.out.println(ANSI_BLUE + "Check relationship in product" + ANSI_RESET);
+        System.out.println(odao.findByKaartnummer(2).getProducten());
+
+        System.out.println(ANSI_GREEN + "[TEST] Remove product from ov" + ANSI_RESET);
+        ov2.removeProduct(p1);
+        System.out.println(ov2);
+        System.out.println(ANSI_BLUE + "Check relationship in product" + ANSI_RESET);
+        System.out.println(p1.getChipkaarten());
+
+        System.out.println(ANSI_GREEN + "[TEST] Remove ovchipkaart from product" + ANSI_GREEN);
+        ov2.addProduct(p1);
+        System.out.println(ANSI_BLUE + p1.getChipkaarten() + ANSI_RESET);
+        p1.removeOVChipkaart(ov2);
+        System.out.println(p1.getChipkaarten());
+        System.out.println(ANSI_BLUE + "Check relationship in ovchipkaart" + ANSI_RESET);
+        System.out.println(ov2);
+        odao.update(ov2);
+        pdao.update(p1);
+
+
+
     }
 
 
